@@ -44,8 +44,8 @@ jobs:
           # Buat arsip zip dari project
           zip -r latest.zip . -x "node_modules/*" -x ".git/*"
           # Upload arsip zip ke cPanel
-          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://$CPANEL_HOST:$CPANEL_PORT/json-api/cpanel?cpanel_jsonapi_user=$CPANEL_USER&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=uploadfiles&dir=$DEPLOY_PATH" -F file=@latest.zip
+          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PORT }}/json-api/cpanel?cpanel_jsonapi_user=${{ secrets.CPANEL_USER }}&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=uploadfiles&dir=${{ secrets.DEPLOY_PATH }}" -F file=@latest.zip
           # Extract arsip zip di cPanel
-          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://$CPANEL_HOST:$CPANEL_PORT/json-api/cpanel?cpanel_jsonapi_user=$CPANEL_USER&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=fileop&op=extract&sourcefiles=latest.zip&destfiles=$DEPLOY_PATH" -X GET
+          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PORT }}/json-api/cpanel?cpanel_jsonapi_user=${{ secrets.CPANEL_USER }}&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=fileop&op=extract&sourcefiles=latest.zip&destfiles=${{ secrets.DEPLOY_PATH }}" -X GET
           # Hapus arsip zip setelah extract
-          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://$CPANEL_HOST:$CPANEL_PORT/json-api/cpanel?cpanel_jsonapi_user=$CPANEL_USER&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=fileop&op=delete&sourcefiles=$DEPLOY_PATH/latest.zip" -X GET
+          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PORT }}/json-api/cpanel?cpanel_jsonapi_user=${{ secrets.CPANEL_USER }}&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=fileop&op=delete&sourcefiles=${{ secrets.DEPLOY_PATH }}/latest.zip" -X GET

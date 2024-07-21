@@ -1,0 +1,54 @@
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.bounce-animation {
+    display: inline-block;
+    animation: bounce 2s infinite;
+}
+
+.typed-cursor {
+    color: #6EABEC ;
+}
+
+.sticky-nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.blur-nav {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: backdrop-filter 0.3s ease, background-color 0.3s ease; /* Untuk transisi yang lebih halus */
+}
+a {
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+a:hover {
+    color: #0056b3;
+    background-color: #e2e6ea;
+}
+
+a:active {
+    color: #00376d;
+    background-color: #cbd3da;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: gray;
+    /* Tailwind blue-500 */
+}

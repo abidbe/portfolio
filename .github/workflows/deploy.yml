@@ -6,46 +6,29 @@ on:
       - main
 
 jobs:
-  deploy:
+  FTP-Deploy-Action:
+    name: FTP-Deploy-Action
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v2.1.0
         with:
-          node-version: "20"
+          fetch-depth: 2
+      - name: Build assets
+        run: npm install && npm run build
 
-      - name: Set up PHP
+      - name: Install PHP and Composer
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2" # Pastikan menggunakan versi PHP 8.2
-          tools: composer
+          php-version: "8.2" # Adjust to match the PHP version used by your Laravel project
+          tools: "composer"
 
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Install PHP dependencies
+        run: composer install --no-dev --optimize-autoloader
 
-      - name: Install NPM dependencies
-        run: npm install
-
-      - name: Build Assets
-        run: npm run production
-
-      - name: Deploy to cPanel
-        env:
-          CPANEL_USER: ${{ secrets.CPANEL_USER }}
-          CPANEL_PASSWORD: ${{ secrets.CPANEL_PASSWORD }}
-          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
-          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-        run: |
-          # Buat arsip zip dari project
-          zip -r latest.zip . -x "node_modules/*" -x ".git/*"
-          # Upload arsip zip ke cPanel
-          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PORT }}/json-api/cpanel?cpanel_jsonapi_user=${{ secrets.CPANEL_USER }}&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=uploadfiles&dir=${{ secrets.DEPLOY_PATH }}" -F file=@latest.zip
-          # Extract arsip zip di cPanel
-          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PORT }}/json-api/cpanel?cpanel_jsonapi_user=${{ secrets.CPANEL_USER }}&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=fileop&op=extract&sourcefiles=latest.zip&destfiles=${{ secrets.DEPLOY_PATH }}" -X GET
-          # Hapus arsip zip setelah extract
-          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PORT }}/json-api/cpanel?cpanel_jsonapi_user=${{ secrets.CPANEL_USER }}&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=fileop&op=delete&sourcefiles=${{ secrets.DEPLOY_PATH }}/latest.zip" -X GET
+      - name: FTP-Deploy-Action
+        uses: SamKirkland/FTP-Deploy-Action@4.3.3
+        with:
+          server: ${{ secrets.SERVER }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}

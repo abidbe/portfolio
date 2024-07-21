@@ -1,0 +1,47 @@
+name: Deploy Laravel 11 to cPanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install NPM dependencies
+        run: npm install && npm run production
+
+      - name: Deploy to cPanel
+        env:
+          CPANEL_USER: ${{ secrets.CPANEL_USER }}
+          CPANEL_PASSWORD: ${{ secrets.CPANEL_PASSWORD }}
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          # Buat arsip zip dari project
+          zip -r latest.zip . -x "node_modules/*" -x ".git/*"
+          # Upload arsip zip ke cPanel
+          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://$CPANEL_HOST:$CPANEL_PORT/json-api/cpanel?cpanel_jsonapi_user=$CPANEL_USER&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=uploadfiles&dir=$DEPLOY_PATH" -F file=@latest.zip
+          # Extract arsip zip di cPanel
+          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://$CPANEL_HOST:$CPANEL_PORT/json-api/cpanel?cpanel_jsonapi_user=$CPANEL_USER&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=fileop&op=extract&sourcefiles=latest.zip&destfiles=$DEPLOY_PATH" -X GET
+          # Hapus arsip zip setelah extract
+          curl --insecure --user $CPANEL_USER:$CPANEL_PASSWORD "https://$CPANEL_HOST:$CPANEL_PORT/json-api/cpanel?cpanel_jsonapi_user=$CPANEL_USER&cpanel_jsonapi_apiversion=2&cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=fileop&op=delete&sourcefiles=$DEPLOY_PATH/latest.zip" -X GET
